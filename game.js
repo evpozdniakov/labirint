@@ -1,48 +1,6 @@
 /* global console:false */
 "use strict";
 
-// click cells to draw path
-// difficulty: draw bars mostly in the middle for the first time
-
-// var rtbl = [];
-
-function getRandomAimingCenter(max) {
-	var r1 = Math.random(),     // 0 < r1 < 1
-		r2 = Math.pow(r1, 0.75) / 2, // 0 < r2 < 0.5, r2 -> 0.5
-		r3 = (r1.toString(2).charAt(30) == "1") ? r2 : 1 - r2, // 0 < r3 < 1, r3 -> 0.5
-		r4 = Math.floor(r3 * max);
-	// rtbl.push([r1, r2, r3, r4]);
-
-	return r4;
-}
-
-/*$(function() {
-	var z = 0;
-	while(++z < 9999) {
-		var r = getRandomAimingCenter(20);
-		document.getElementById('test20-'+r).textContent+='|';
-	}
-	rtbl.sort(function(a,b) {
-		return a[0] - b[0];
-	});
-	rtbl.unshift(['r1', 'r2', 'r3', 'r4']);
-
-	console.table(rtbl);
-});*/
-
-/*var tbl = [['r1', 'r2', 'r3a', 'r3b', 'r4a', 'r4b']];
-for (var r1 = 0.0001; r1 < 0.9999; r1+=0.005) {
-	// var r1 = Math.random(),     // 0 < r1 < 1
-	var r2 = Math.sqrt(r1) / 2, // 0 < r2 < 0.5, r2 -> 0.5
-		r3a = r2, // 0 < r3 < 1, r3 -> 0.5
-		r3b = 1 - r2, // 0 < r3 < 1, r3 -> 0.5
-		r4a = Math.floor(r3a * 20),
-		r4b = Math.floor(r3b * 20);
-
-	tbl.push([r1, r2, r3a, r3b, r4a, r4b]);
-}
-console.table(tbl);*/
-
 document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 	var lbrCells;
 	var lbrCheckCells;
@@ -61,34 +19,34 @@ document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 	};
 
 	var ELE = {
-		bars:         document.getElementById('lbrBars'),
-		consFails:    document.getElementById('lbrConsFails'),
-		displayWhile: document.getElementById('displayWhileGenerate'),
-		difficulty:   document.getElementById('lbrDifficulty'),
-		fails:        document.getElementById('lbrFails'),
-		lbrBox:       document.getElementById('lbrBox'),
-		size:         document.getElementById('lbrSize'),
-		maxConsFails: document.getElementById('lbrMaxConsFails'),
-		generateBtn:  document.getElementById('lbrGenerateBtn'),
-		stopBtn:      document.getElementById('stopGenerateBtn')
+		lbrBox: document.getElementById('lbrBox')
 	};
 
 	init();
 
+	function getRandomAimingCenter(max) {
+		var r1 = Math.random(),     // 0 < r1 < 1
+			r2 = Math.pow(r1, 0.75) / 2, // 0 < r2 < 0.5, r2 -> 0.5
+			r3 = (r1.toString(2).charAt(30) == "1") ? r2 : 1 - r2, // 0 < r3 < 1, r3 -> 0.5
+			r4 = Math.floor(r3 * max);
+		// rtbl.push([r1, r2, r3, r4]);
+
+		return r4;
+	}
+
 	function init() {
-		ELE.generateBtn.addEventListener('click', lbrGenerate);
-		ELE.stopBtn.addEventListener('click', stopGenerate);
+		lbrGenerate();
 	}
 
 	function getCellIdByCoords(x, y) {
 		return '_x' +x+ '_y' +y;
 	}
 
-	function lbrGenerate() {
+	function lbrGenerate(w, h) {
 		// console.log('---  lbr generate');
-		var wh = ELE.size.value.split('x');
-		lbrW = parseInt(wh[0]);
-		lbrH = parseInt(wh[1]);
+		lbrW = w || 25;
+		lbrH = h || 25;
+		difficulty = 10; // FIXME
 
 		currentCell = {
 			x: Math.floor(lbrW / 2),
@@ -133,11 +91,6 @@ document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 			consFails: 0,
 			maxConsFails: 0
 		};
-
-		difficulty = parseInt(ELE.difficulty.value, 10);
-
-		ELE.generateBtn.disabled = true;
-		ELE.stopBtn.disabled = false;
 
 		var z = 0;
 		while( !stopGenerateLoop && ++z < 99999 ) {
@@ -188,13 +141,8 @@ document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 
 		if (cellVal + barPos1 == 15 || cellVal2 + barPos2 == 15) {
 			stats.fails++;
-			// ELE.fails.value = stats.fails;
-
 			stats.consFails++;
-			// ELE.consFails.value = stats.consFails;
-
 			stats.maxConsFails = Math.max(stats.maxConsFails, stats.consFails);
-			// ELE.maxConsFails.value = stats.maxConsFails;
 			if (stats.maxConsFails == difficulty) {
 				stopGenerate();
 			}
@@ -209,31 +157,8 @@ document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 				return;
 			}
 
-			stats.consFails = 0; // ELE.consFails.value = consFails;
-			stats.bars++; // ELE.bars.value = stats.bars;
-
-			if (ELE.displayWhile.checked) {
-				var cell1 = document.getElementById(getCellIdByCoords(x1, y1));
-				var cell2 = document.getElementById(getCellIdByCoords(x2, y2));
-				switch(barPos1) {
-					case 8:
-						cell1.style.borderTop = '1px solid black';
-						cell2.style.borderBottom = '1px solid black';
-						break;
-					case 4:
-						cell1.style.borderRight = '1px solid black';
-						cell2.style.borderLeft = '1px solid black';
-						break;
-					case 2:
-						cell1.style.borderBottom = '1px solid black';
-						cell2.style.borderTop = '1px solid black';
-						break;
-					case 1:
-						cell1.style.borderLeft = '1px solid black';
-						cell2.style.borderRight = '1px solid black';
-						break;
-				}
-			}
+			stats.consFails = 0;
+			stats.bars++;
 		}
 	}
 
@@ -319,14 +244,6 @@ document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 	function stopGenerate() {
 		// console.log('--- stop generate');
 		stopGenerateLoop = true;
-		
-		ELE.generateBtn.disabled = false;
-		ELE.stopBtn.disabled = true;
-		ELE.bars.value = stats.bars;
-		ELE.fails.value = stats.fails;
-		ELE.consFails.value = stats.consFails;
-		ELE.maxConsFails.value = stats.maxConsFails;
-		
 		drawLbr(true);
 	}
 
@@ -377,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 			}
 		}
 
-		console.log('--- looking for path');
+		// console.log('--- looking for path');
 		lookingForPath: {
 			var z = 0;
 			while (++z < 10) {
@@ -483,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 
 				tdClone.addEventListener('click', tryToGoToCell);
 
-				if (force || ELE.displayWhile.checked) {
+				if (force) {
 					if (cellVal & 8) {
 						tdClone.style.borderTop = '1px solid black';
 					}
@@ -510,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function(/*ev*/) {
 		if (farestCell) {
 			document.getElementById(getCellIdByCoords(farestCell.x, farestCell.y))
 				.style.backgroundColor = '#fcf';
-			console.log('--- ', farestCell.z);
+			// console.log('--- ', farestCell.z);
 		}
 	}
 });
